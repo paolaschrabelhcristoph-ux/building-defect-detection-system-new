@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>定期巡检 - 建筑质量检测与缺陷识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg,
+                #74b9ff 0%,
+                #0984e3 25%,
+                #6c5ce7 50%,
+                #a29bfe 75%,
+                #fd79a8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .inspection-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #636e72;
+            font-size: 14px;
+        }
+
+        .defect-list {
+            margin-top: 30px;
+        }
+
+        .defect-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .defect-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 20px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .defect-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .defect-info {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .defect-info h3 {
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .defect-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .detail-item {
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #636e72;
+            display: inline-block;
+            width: 100px;
+        }
+
+        .detail-value {
+            color: #2d3436;
+        }
+
+        .severity-high {
+            color: #e17055;
+            font-weight: bold;
+        }
+
+        .severity-medium {
+            color: #fdcb6e;
+            font-weight: bold;
+        }
+
+        .severity-low {
+            color: #00b894;
+            font-weight: bold;
+        }
+
+        .detection-result {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .process-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .process-btn.process {
+            background: #00b894;
+            color: white;
+        }
+
+        .process-btn.process:hover {
+            background: #009c7a;
+        }
+
+        .process-btn.ignore {
+            background: #636e72;
+            color: white;
+        }
+
+        .process-btn.ignore:hover {
+            background: #555;
+        }
+
+        .status-processed {
+            color: #00b894;
+            font-weight: bold;
+        }
+
+        .status-unprocessed {
+            color: #e17055;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: #6c5ce7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background: #5f4ae3;
+            transform: translateY(-2px);
+        }
+
+        .search-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .search-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .search-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #636e72;
+            font-weight: 500;
+        }
+
+        .search-group input,
+        .search-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 40px;
+            color: #636e72;
+            font-size: 18px;
+        }
+
+        .no-records h3 {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .defect-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .defect-image {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            .action-buttons {
+                justify-content: center;
+            }
+
+            .inspection-stats {
+                flex-direction: column;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-group {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>定期巡检管理系统</h1>
+        <p>集中处理待处理的建筑缺陷记录</p>
+    </div>
+
+    <div class="search-section">
+        <form class="search-form" id="searchForm" action="/regular-inspection/search" method="post">
+            <div class="search-group">
+                <label for="locationFilter">缺陷地点</label>
+                <input type="text" id="locationFilter" name="location" th:value="${location}" placeholder="输入地点关键词">
+            </div>
+            <div class="search-group">
+                <label for="severityFilter">危险程度</label>
+                <select id="severityFilter" name="severity">
+                    <option value="">全部</option>
+                    <option value="高" th:selected="${severity == '高'}">高</option>
+                    <option value="中" th:selected="${severity == '中'}">中</option>
+                    <option value="低" th:selected="${severity == '低'}">低</option>
+                </select>
+            </div>
+            <div class="search-group">
+                <label for="defectTypeFilter">缺陷类型</label>
+                <select id="defectTypeFilter" name="defectType">
+                    <option value="">全部</option>
+                    <option value="墙体裂缝" th:selected="${defectType == '墙体裂缝'}">墙体裂缝</option>
+                    <option value="表面脱落" th:selected="${defectType == '表面脱落'}">表面脱落</option>
+                    <option value="渗水痕迹" th:selected="${defectType == '渗水痕迹'}">渗水痕迹</option>
+                    <option value="钢筋锈蚀" th:selected="${defectType == '钢筋锈蚀'}">钢筋锈蚀</option>
+                    <option value="混凝土蜂窝" th:selected="${defectType == '混凝土蜂窝'}">混凝土蜂窝</option>
+                    <option value="结构变形" th:selected="${defectType == '结构变形'}">结构变形</option>
+                    <option value="其他" th:selected="${defectType == '其他'}">其他</option>
+                </select>
+            </div>
+            <button type="submit" class="search-btn">搜索</button>
+            <button type="button" class="search-btn" onclick="resetFilter()">重置</button>
+        </form>
+    </div>
+
+    <div class="inspection-stats">
+        <div class="stat-card">
+            <div class="stat-number" id="totalDefects" th:text="${#lists.size(defectRecords)}">0</div>
+            <div class="stat-label">待处理缺陷数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="highRiskDefects">0</div>
+            <div class="stat-label">高危待处理</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="mediumRiskDefects">0</div>
+            <div class="stat-label">中危待处理</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="lowRiskDefects">0</div>
+            <div class="stat-label">低危待处理</div>
+        </div>
+    </div>
+
+    <div class="defect-list" id="defectList">
+        <div class="defect-item" th:each="record : ${defectRecords}" th:id="${'defect-' + record.id}">
+            <div class="defect-image">
+                <img th:src="@{${record.imagePath}}" th:alt="${record.defectType}"
+                     onerror="this.src='https://via.placeholder.com/150x150/cccccc/666666?text=No+Image'">
+            </div>
+            <div class="defect-info">
+                <h3 th:text="${record.location}">缺陷地点</h3>
+                <div class="defect-details">
+                    <div class="detail-item">
+                        <span class="detail-label">缺陷类型:</span>
+                        <span class="detail-value" th:text="${record.defectType}">类型</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">危险程度:</span>
+                        <span class="detail-value"
+                              th:class="${'severity-' + #strings.toLowerCase(record.severityLevel)}"
+                              th:text="${record.severityLevel}">程度</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">处理状态:</span>
+                        <span class="detail-value status-unprocessed" th:text="${record.isProcessed}">状态</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">检测日期:</span>
+                        <span class="detail-value" th:text="${#temporals.format(record.detectionDate, 'yyyy-MM-dd')}">日期</span>
+                    </div>
+                </div>
+
+                <!-- 详细描述另起一行显示 -->
+                <div class="detail-item" style="margin-top: 10px;">
+                    <span class="detail-label">详细描述:</span>
+                    <span class="detail-value" th:text="${record.description}">描述</span>
+                </div>
+
+                <!-- 检测结果也另起一行显示 -->
+                <div th:if="${record.detectionResult}" class="detection-result">
+                    <div class="detail-label">检测结果:</div>
+                    <div class="detail-value" th:text="${record.detectionResult}">检测结果内容</div>
+                </div>
+
+                <!-- 处理按钮 -->
+                <div class="action-buttons">
+                    <button class="process-btn process" th:attr="data-id=${record.id}">标记为已处理</button>
+                    <button class="process-btn ignore" th:attr="data-id=${record.id}">忽略此记录</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="noRecordsMessage" th:if="${#lists.isEmpty(defectRecords)}" class="no-records">
+            <h3>暂无待处理的缺陷记录</h3>
+            <p>所有缺陷记录均已处理完成</p>
+        </div>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="/index" class="back-btn">返回首页</a>
+    </div>
+</div>
+
+<script>
+    // 初始统计信息
+    function updateStats() {
+        const totalDefects = document.querySelectorAll('.defect-item').length;
+        document.getElementById('totalDefects').textContent = totalDefects;
+
+        let highRiskCount = 0;
+        let mediumRiskCount = 0;
+        let lowRiskCount = 0;
+
+        document.querySelectorAll('.defect-item').forEach(item => {
+            const severity = item.querySelector('.severity-high, .severity-medium, .severity-low').textContent;
+            if (severity === '高') highRiskCount++;
+            else if (severity === '中') mediumRiskCount++;
+            else if (severity === '低') lowRiskCount++;
+        });
+
+        document.getElementById('highRiskDefects').textContent = highRiskCount;
+        document.getElementById('mediumRiskDefects').textContent = mediumRiskCount;
+        document.getElementById('lowRiskDefects').textContent = lowRiskCount;
+    }
+
+    // 重置过滤器
+    function resetFilter() {
+        document.getElementById('locationFilter').value = '';
+        document.getElementById('severityFilter').value = '';
+        document.getElementById('defectTypeFilter').value = '';
+
+        // 提交表单以重置搜索结果
+        document.getElementById('searchForm').submit();
+    }
+
+    // 处理状态更新 - 修改为使用 JSON 格式
+    document.querySelectorAll('.process-btn.process').forEach(button => {
+        button.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-id');
+            updateStatus(recordId, '已处理');
+        });
+    });
+
+    document.querySelectorAll('.process-btn.ignore').forEach(button => {
+        button.addEventListener('click', function() {
+            const recordId = this.getAttribute('data-id');
+            updateStatus(recordId, '已忽略');
+        });
+    });
+
+    function updateStatus(recordId, status) {
+        // 使用 fetch API 发送 JSON 格式的请求
+        fetch('/regular-inspection/update-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded', // 保持原有格式
+            },
+            body: `id=${recordId}&status=${encodeURIComponent(status)}`
+        })
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            if (data === 'success') {
+                // 更新UI
+                const defectItem = document.getElementById(`defect-${recordId}`);
+                if (defectItem) {
+                    defectItem.querySelector('.detail-value.status-unprocessed').textContent = status;
+                    defectItem.querySelector('.detail-value.status-unprocessed').className =
+                        status === '已处理' ? 'detail-value status-processed' : 'detail-value status-unprocessed';
+
+                    // 如果状态变为已处理或已忽略，移除操作按钮
+                    if (status === '已处理' || status === '已忽略') {
+                        defectItem.querySelector('.action-buttons').innerHTML =
+                            `<span class="detail-value" style="color: #636e72; font-style: italic;">已${status}</span>`;
+                    }
+                }
+
+                // 更新统计信息
+                updateStats();
+
+                alert('状态更新成功！');
+            } else {
+                // 显示具体的错误信息
+                alert('更新失败：' + data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('更新失败：' + error.message);
+        });
+    }
+
+    // 初始化统计
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStats();
+    });
+</script>
+
+</body>
+</html>

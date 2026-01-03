@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>缺陷检测 - 建筑质量检测与缺陷识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg,
+                #74b9ff 0%,
+                #0984e3 25%,
+                #6c5ce7 50%,
+                #a29bfe 75%,
+                #fd79a8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px 20px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #4facfe;
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            color: #4facfe;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .upload-btn {
+            background: linear-gradient(120deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 0 10px;
+        }
+
+        .image-comparison {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .image-container {
+            text-align: center;
+            margin: 10px;
+            flex: 1;
+            min-width: 300px;
+            max-width: 50%; /* 限制最大宽度 */
+        }
+
+        .image-container h4 {
+            margin-bottom: 10px;
+            color: #2d3436;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+        }
+
+        .defect-results {
+            margin-top: 30px;
+        }
+
+        .defect-results h2 {
+            font-size: 24px;
+            color: #2d3436;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .defect-list {
+            list-style: none;
+        }
+
+        .defect-item {
+            background: white;
+            border-left: 4px solid #4facfe;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .defect-item h4 {
+            color: #e17055;
+            margin-bottom: 5px;
+        }
+
+        .defect-item p {
+            color: #636e72;
+            margin: 0;
+        }
+
+        .error {
+            color: #d63031;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6c5ce7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5f4ae3;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #636e72;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .input-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>建筑缺陷智能检测系统</h1>
+        <p>上传建筑图片，AI自动识别缺陷并生成检测报告</p>
+    </div>
+
+    <div class="upload-section">
+        <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">点击选择图片或拖拽图片到此处</div>
+            <div class="upload-text">支持 JPG、PNG、JPEG 格式，最大 10MB</div>
+            <button class="upload-btn">选择图片</button>
+        </div>
+
+        <form id="uploadForm" action="/upload-image" method="post" enctype="multipart/form-data">
+            <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+            <input type="hidden" id="defectLocation" name="defectLocation" value="">
+            <input type="hidden" id="defectDescription" name="defectDescription" value="">
+        </form>
+    </div>
+
+    <!-- 添加缺陷地点和详细描述输入框 -->
+    <div class="input-section">
+        <div class="input-group">
+            <label for="defectLocationInput">缺陷地点 *</label>
+            <input type="text" id="defectLocationInput" placeholder="请输入缺陷具体位置" required>
+        </div>
+        <div class="input-group">
+            <label for="defectDescriptionInput">详细描述</label>
+            <textarea id="defectDescriptionInput" placeholder="请输入缺陷的详细描述信息"></textarea>
+        </div>
+    </div>
+
+    <div th:if="${originalImagePath}" class="image-comparison">
+        <div class="image-container">
+            <h4>原图</h4>
+            <img th:src="@{${originalImagePath}}" alt="原图">
+        </div>
+        <div class="image-container">
+            <h4>处理后图片</h4>
+            <img th:src="@{${processedImagePath}}" alt="处理后图片">
+        </div>
+    </div>
+
+    <div th:if="${defects}" class="defect-results">
+        <h2>检测结果 - 发现 <span th:text="${defectCount}"></span> 个缺陷</h2>
+        <ul class="defect-list">
+            <li class="defect-item" th:each="defect : ${defects}">
+                <h4>缺陷类型: [[${defect}]]</h4>
+                <p>严重程度: 中等</p>
+            </li>
+        </ul>
+    </div>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="/index" class="back-btn">返回首页</a>
+    </div>
+</div>
+
+<script>
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            // 更新隐藏字段的值
+            const locationInput = document.getElementById('defectLocationInput');
+            const descriptionInput = document.getElementById('defectDescriptionInput');
+
+            if (locationInput.value.trim() === '') {
+                alert('请输入缺陷地点');
+                return;
+            }
+
+            document.getElementById('defectLocation').value = locationInput.value;
+            document.getElementById('defectDescription').value = descriptionInput.value;
+
+            document.getElementById('uploadForm').submit();
+        }
+    }
+
+    // 拖拽上传功能
+    const uploadArea = document.querySelector('.upload-area');
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#4facfe';
+        this.style.backgroundColor = '#e3f2fd';
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#ddd';
+        this.style.backgroundColor = '#fafafa';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#ddd';
+        this.style.backgroundColor = '#fafafa';
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const fileInput = document.getElementById('imageUpload');
+            fileInput.files = files;
+
+            // 更新隐藏字段的值
+            const locationInput = document.getElementById('defectLocationInput');
+            const descriptionInput = document.getElementById('defectDescriptionInput');
+
+            if (locationInput.value.trim() === '') {
+                alert('请输入缺陷地点');
+                return;
+            }
+
+            document.getElementById('defectLocation').value = locationInput.value;
+            document.getElementById('defectDescription').value = descriptionInput.value;
+
+            document.getElementById('uploadForm').submit();
+        }
+    });
+</script>
+</body>
+</html>

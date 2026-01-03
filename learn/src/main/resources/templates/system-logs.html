@@ -1,0 +1,137 @@
+<!-- src/main/resources/templates/system-logs.html -->
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>系统日志 - 建筑质量检测与缺陷识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg,
+                #74b9ff 0%,
+                #0984e3 25%,
+                #6c5ce7 50%,
+                #a29bfe 75%,
+                #fd79a8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logs-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .logs-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-success {
+            color: #00b894;
+            font-weight: bold;
+        }
+
+        .status-failure {
+            color: #e17055;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6c5ce7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5f4ae3;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>系统日志</h1>
+        <p>系统操作日志记录</p>
+    </div>
+
+    <table class="logs-table">
+        <thead>
+        <tr>
+            <th>用户ID</th>
+            <th>操作类型</th>
+            <th>操作内容</th>
+            <th>IP地址</th>
+            <th>状态</th>
+            <th>时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="log : ${logs}">
+            <td th:text="${log.userId}">用户ID</td>
+            <td th:text="${log.operationType}">操作类型</td>
+            <td th:text="${log.operationContent}">操作内容</td>
+            <td th:text="${log.ipAddress}">IP地址</td>
+            <td>
+                <span th:class="${log.status == '成功' ? 'status-success' : 'status-failure'}"
+                      th:text="${log.status}">状态</span>
+            </td>
+            <td th:text="${#temporals.format(log.createdAt, 'yyyy-MM-dd HH:mm:ss')}">时间</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div style="text-align: center;">
+        <a href="/index" class="back-btn">返回首页</a>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>数据录入 - 建筑质量检测与缺陷识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg,
+                #74b9ff 0%,
+                #0984e3 25%,
+                #6c5ce7 50%,
+                #a29bfe 75%,
+                #fd79a8 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #636e72;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(120deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 15px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #636e72;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .reset-btn:hover {
+            background: #555;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .success {
+            background: #00b894;
+            color: white;
+        }
+
+        .error {
+            background: #e17055;
+            color: white;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6c5ce7;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5f4ae3;
+        }
+
+        .upload-section {
+            margin-top: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #4facfe;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin: 0;
+        }
+
+        .image-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>缺陷数据录入</h1>
+        <p>手动录入建筑缺陷信息，为报告生成提供数据</p>
+    </div>
+
+    <form id="dataEntryForm" action="/data-entry/submit" method="post" enctype="multipart/form-data">
+        <div th:if="${success}" class="message success">
+            <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="message error">
+            <span th:text="${error}"></span>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="location">缺陷地点 *</label>
+                <input type="text" id="location" name="location" required placeholder="请输入缺陷具体位置">
+            </div>
+            <div class="form-group">
+                <label for="defectType">缺陷类型 *</label>
+                <select id="defectType" name="defectType" required>
+                    <option value="">请选择缺陷类型</option>
+                    <option value="墙体裂缝">墙体裂缝</option>
+                    <option value="表面脱落">表面脱落</option>
+                    <option value="渗水痕迹">渗水痕迹</option>
+                    <option value="钢筋锈蚀">钢筋锈蚀</option>
+                    <option value="混凝土蜂窝">混凝土蜂窝</option>
+                    <option value="结构变形">结构变形</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="severityLevel">危险程度 *</label>
+                <select id="severityLevel" name="severityLevel" required>
+                    <option value="">请选择危险程度</option>
+                    <option value="高">高</option>
+                    <option value="中">中</option>
+                    <option value="低">低</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="detectionDate">检测日期 *</label>
+                <input type="date" id="detectionDate" name="detectionDate" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="detectionResult">检测结果</label>
+            <textarea id="detectionResult" name="detectionResult" placeholder="请输入检测结果，如：AI检测结果为墙体裂缝，长度15cm，宽度2mm，建议立即修复"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="description">详细描述</label>
+            <textarea id="description" name="description" placeholder="请输入缺陷的详细描述信息"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="isProcessed">是否已处理</label>
+            <select id="isProcessed" name="isProcessed" class="form-control">
+                <option value="未处理">未处理</option>
+                <option value="已处理">已处理</option>
+            </select>
+        </div>
+
+
+        <div class="upload-section">
+            <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                <p>点击上传缺陷图片或拖拽图片到此处</p>
+                <p>支持 JPG、PNG、JPEG 格式，最大 10MB</p>
+            </div>
+            <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
+        </div>
+
+        <div class="image-preview" id="imagePreview" style="display: none;">
+            <img id="previewImage" src="" alt="图片预览">
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" class="submit-btn">提交录入</button>
+            <button type="reset" class="reset-btn">重置表单</button>
+        </div>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/index" class="back-btn">返回首页</a>
+    </div>
+</div>
+
+<script>
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 设置默认日期为今天
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('detectionDate').value = today;
+    });
+
+    // 拖拽上传功能
+    const uploadArea = document.querySelector('.upload-area');
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#4facfe';
+        this.style.backgroundColor = '#e3f2fd';
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#ddd';
+        this.style.backgroundColor = '#fafafa';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#ddd';
+        this.style.backgroundColor = '#fafafa';
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const fileInput = document.getElementById('imageUpload');
+            fileInput.files = files;
+            handleFileSelect(fileInput);
+        }
+    });
+</script>
+</body>
+</html>
